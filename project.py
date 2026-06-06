@@ -581,6 +581,46 @@ def popular_dishes_statistics():
 
 
 # =========================
+# ANALYSEFENSTER
+# =========================
+
+def open_analysis_window():
+    analysis_window = ctk.CTkToplevel(root)
+    analysis_window.title("Analysis")
+    analysis_window.geometry("350x300")
+    analysis_window.grab_set()
+
+    title = ctk.CTkLabel(
+        analysis_window,
+        text="Choose an analysis",
+        font=("Arial", 22, "bold"),
+        text_color=TEXT_COLOR
+    )
+    title.pack(pady=(25, 20))
+
+    daily_button = create_button(
+        analysis_window,
+        "Daily analytics",
+        lambda: [daily_analytics(), analysis_window.destroy()]
+    )
+    daily_button.pack(pady=10)
+
+    weekly_button = create_button(
+        analysis_window,
+        "Weekly analytics",
+        lambda: [weekly_analytics(), analysis_window.destroy()]
+    )
+    weekly_button.pack(pady=10)
+
+    popular_button = create_button(
+        analysis_window,
+        "Popular dishes",
+        lambda: [popular_dishes_statistics(), analysis_window.destroy()]
+    )
+    popular_button.pack(pady=10)
+
+
+# =========================
 # ALLES ZURÜCKSETZEN
 # =========================
 
@@ -631,28 +671,58 @@ root.title("NutriWork")
 
 
 # =========================
-# TITEL
+# OBERER BEREICH
 # =========================
 
-title_label = ctk.CTkLabel(
+top_frame = ctk.CTkFrame(
     root,
+    fg_color=APP_BG
+)
+top_frame.pack(fill="x", padx=20, pady=(20, 10))
+
+
+# TITEL MITTIG
+
+title_label = ctk.CTkLabel(
+    top_frame,
     text="NutriWork Dashboard",
     font=("Arial", 30, "bold"),
     text_color=TEXT_COLOR
 )
-title_label.pack(pady=(20, 10))
+title_label.pack(pady=(0, 12))
 
 
-# =========================
-# PROFIL-BUTTON
-# =========================
+# BUTTONS MITTIG UNTER DER ÜBERSCHRIFT
+
+top_buttons_frame = ctk.CTkFrame(
+    top_frame,
+    fg_color=APP_BG
+)
+top_buttons_frame.pack(anchor="center")
 
 profile_button = create_button(
-    root,
+    top_buttons_frame,
     "Create User Profile",
     open_profile_window
 )
-profile_button.pack(pady=(0, 10))
+profile_button.pack(side="left", padx=8)
+
+analysis_button = create_button(
+    top_buttons_frame,
+    "Analysis",
+    open_analysis_window
+)
+analysis_button.pack(side="left", padx=8)
+
+reset_button = ctk.CTkButton(
+    top_buttons_frame,
+    text="Reset all data",
+    command=reset_all_data,
+    fg_color=RESET_COLOR,
+    hover_color=RESET_HOVER,
+    text_color="black"
+)
+reset_button.pack(side="left", padx=8)
 
 
 # =========================
@@ -688,47 +758,6 @@ weekday = ctk.CTkOptionMenu(
     command=new_dishes
 )
 weekday.pack(pady=(0, 20))
-
-
-# =========================
-# ANALYSE-BUTTONS
-# =========================
-
-daily_analytics_button = create_button(
-    left_frame,
-    "Daily analytics",
-    daily_analytics
-)
-daily_analytics_button.pack(pady=(0, 15))
-
-weekly_analytics_button = create_button(
-    left_frame,
-    "Weekly analytics",
-    weekly_analytics
-)
-weekly_analytics_button.pack(pady=(0, 15))
-
-popular_dishes_button = create_button(
-    left_frame,
-    "Popular dishes",
-    popular_dishes_statistics
-)
-popular_dishes_button.pack(pady=(0, 15))
-
-
-# =========================
-# RESET-BUTTON
-# =========================
-
-reset_button = ctk.CTkButton(
-    left_frame,
-    text="Reset all data",
-    command=reset_all_data,
-    fg_color=RESET_COLOR,
-    hover_color=RESET_HOVER,
-    text_color="black"
-)
-reset_button.pack(pady=(0, 20))
 
 
 # =========================
