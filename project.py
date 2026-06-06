@@ -1,28 +1,51 @@
 import customtkinter as ctk
 import csv
 import os
+from datetime import datetime
+from tkinter import messagebox
 
 
+# =========================
 # SETTINGS
+# =========================
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
 
 
+# =========================
+# DESIGN-KONSTANTEN
+# =========================
+
+APP_BG = "#F3F5F0"
+CARD_BG = "white"
+BUTTON_COLOR = "#A8C3A0"
+BUTTON_HOVER = "#8FAE87"
+RESET_COLOR = "#D98C8C"
+RESET_HOVER = "#C76F6F"
+TEXT_COLOR = "#2B2B2B"
+
+
+# =========================
 # DATEIEN
+# =========================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ORDERS_FILE = os.path.join(BASE_DIR, "orders.csv")
 FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback.csv")
 
 
+# =========================
 # GLOBALE VARIABLEN
+# =========================
 
 user_profile = {}
 selected_dish = None
 
 
+# =========================
 # GERICHTE DES WOCHENPLANS
+# =========================
 
 schedule = {
     "Monday": [
@@ -45,6 +68,7 @@ schedule = {
             "score": "8.2 / 10"
         }
     ],
+
     "Tuesday": [
         {
             "name": "Pasta Napoli",
@@ -65,6 +89,7 @@ schedule = {
             "score": "8.4 / 10"
         }
     ],
+
     "Wednesday": [
         {
             "name": "Salmon Rice",
@@ -76,6 +101,7 @@ schedule = {
             "score": "8.2 / 10"
         }
     ],
+
     "Thursday": [
         {
             "name": "Pasta Napoli",
@@ -87,6 +113,7 @@ schedule = {
             "score": "7.5 / 10"
         }
     ],
+
     "Friday": [
         {
             "name": "Salmon Rice",
@@ -101,14 +128,21 @@ schedule = {
 }
 
 
+# =========================
 # HILFSFUNKTIONEN
+# =========================
 
 def show_output(title, text):
     details_title.configure(text=title)
+
     details_textbox.configure(state="normal")
     details_textbox.delete("1.0", "end")
     details_textbox.insert("1.0", text)
     details_textbox.configure(state="disabled")
+
+
+def get_current_datetime():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def ensure_csv_file(file_path, header):
@@ -122,27 +156,64 @@ def file_exists_with_data(file_path):
     return os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
 
+def rating_to_stars(rating):
+    full_stars = int(round(rating))
+    empty_stars = 5 - full_stars
+    return "★" * full_stars + "☆" * empty_stars
+
+
+def create_button(parent, text, command):
+    return ctk.CTkButton(
+        parent,
+        text=text,
+        command=command,
+        fg_color=BUTTON_COLOR,
+        hover_color=BUTTON_HOVER,
+        text_color="black"
+    )
+
+
+# =========================
 # USER PROFILE
+# =========================
 
 def open_profile_window():
     new_window = ctk.CTkToplevel(root)
     new_window.title("User Profile")
-    new_window.geometry("400x400")
+    new_window.geometry("400x430")
     new_window.grab_set()
 
-    gender_label = ctk.CTkLabel(new_window, text="Gender", font=("Arial", 18))
+    gender_label = ctk.CTkLabel(
+        new_window,
+        text="Gender",
+        font=("Arial", 18)
+    )
     gender_label.pack(pady=(20, 5))
 
-    gender = ctk.CTkOptionMenu(new_window, values=["Male", "Female", "Diver"])
+    gender = ctk.CTkOptionMenu(
+        new_window,
+        values=["Male", "Female", "Diver"]
+    )
     gender.pack()
 
-    weight_label = ctk.CTkLabel(new_window, text="Weight", font=("Arial", 18))
+    weight_label = ctk.CTkLabel(
+        new_window,
+        text="Weight in kg",
+        font=("Arial", 18)
+    )
     weight_label.pack(pady=(20, 5))
 
-    weight_entry = ctk.CTkEntry(new_window)
+    weight_entry = ctk.CTkEntry(
+        new_window,
+        placeholder_text="e.g. 70"
+    )
     weight_entry.pack()
 
-    goal_label = ctk.CTkLabel(new_window, text="Goal", font=("Arial", 18))
+    goal_label = ctk.CTkLabel(
+        new_window,
+        text="Goal",
+        font=("Arial", 18)
+    )
     goal_label.pack(pady=(20, 5))
 
     goal_option = ctk.CTkOptionMenu(
@@ -179,20 +250,20 @@ def open_profile_window():
             f"Weight: {user_profile['weight']} kg\n"
             f"Goal: {user_profile['goal']}"
         )
+
         new_window.destroy()
 
-    save_button = ctk.CTkButton(
+    save_button = create_button(
         new_window,
-        text="Save",
-        command=save_profile,
-        fg_color="#A8C3A0",
-        hover_color="#8FAE87",
-        text_color="black"
+        "Save Profile",
+        save_profile
     )
     save_button.pack(pady=25)
 
 
-# GERICHTE AKTUALISIEREN
+# =========================
+# GERICHTE
+# =========================
 
 def new_dishes(day=None):
     for widget in dishes_frame.winfo_children():
@@ -205,15 +276,13 @@ def new_dishes(day=None):
             dishes_frame,
             text=dish["name"],
             height=50,
-            fg_color="#A8C3A0",
-            hover_color="#8FAE87",
+            fg_color=BUTTON_COLOR,
+            hover_color=BUTTON_HOVER,
             text_color="black",
             command=lambda d=dish: show_dish(d)
         )
         button.pack(fill="x", padx=20, pady=10)
 
-
-# GERICHT DETAILS
 
 def show_dish(dish):
     global selected_dish
@@ -239,24 +308,31 @@ def show_dish(dish):
                 f"\n\nProtein Coverage: {protein_percent}%"
                 f"\nRecommended for muscle gain."
             )
+
         except ValueError:
             text += "\n\nPlease enter a valid weight in your profile."
 
     show_output("Dish Details", text)
 
 
+# =========================
 # BESTELLUNG SPEICHERN
+# =========================
 
 def order_dish():
     if selected_dish is None:
         show_output("Order", "Please select a dish first.")
         return
 
-    ensure_csv_file(ORDERS_FILE, ["Dish", "Amount", "Day"])
+    ensure_csv_file(
+        ORDERS_FILE,
+        ["Date", "Dish", "Amount", "Day"]
+    )
 
     with open(ORDERS_FILE, "a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow([
+            get_current_datetime(),
             selected_dish["name"],
             1,
             weekday.get()
@@ -270,7 +346,9 @@ def order_dish():
     )
 
 
+# =========================
 # FEEDBACK SPEICHERN
+# =========================
 
 def save_feedback():
     if selected_dish is None:
@@ -284,11 +362,15 @@ def save_feedback():
         show_output("Feedback", "Please enter a feedback comment.")
         return
 
-    ensure_csv_file(FEEDBACK_FILE, ["Dish", "Rating", "Comment"])
+    ensure_csv_file(
+        FEEDBACK_FILE,
+        ["Date", "Dish", "Rating", "Comment"]
+    )
 
     with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow([
+            get_current_datetime(),
             selected_dish["name"],
             rating,
             comment
@@ -296,16 +378,30 @@ def save_feedback():
 
     comment_box.delete("1.0", "end")
 
+    stars = rating_to_stars(rating)
+
     show_output(
         "Feedback",
         f"Feedback saved successfully!\n\n"
         f"Dish: {selected_dish['name']}\n"
-        f"Rating: {rating} / 5\n"
+        f"Rating: {stars} {rating} / 5\n"
         f"Comment: {comment}"
     )
 
 
+# =========================
+# RATING-LABEL AKTUALISIEREN
+# =========================
+
+def update_rating_label(value):
+    rating = int(round(value))
+    stars = rating_to_stars(rating)
+    rating_value_label.configure(text=f"{stars} {rating} / 5")
+
+
+# =========================
 # TAGESANALYSE
+# =========================
 
 def daily_analytics():
     if not file_exists_with_data(ORDERS_FILE):
@@ -340,7 +436,9 @@ def daily_analytics():
     show_output(f"Daily Analytics: {selected_day}", text)
 
 
+# =========================
 # WOCHENANALYSE
+# =========================
 
 def weekly_analytics():
     orders_count = {}
@@ -387,7 +485,8 @@ def weekly_analytics():
 
         if dish in rating_sum:
             average_rating = round(rating_sum[dish] / rating_count[dish], 1)
-            rating_text = f"{average_rating} / 5"
+            stars = rating_to_stars(average_rating)
+            rating_text = f"{stars} {average_rating} / 5"
         else:
             rating_text = "No rating yet"
 
@@ -400,7 +499,9 @@ def weekly_analytics():
     show_output("Weekly Analytics", text)
 
 
+# =========================
 # BELIEBTESTE GERICHTE NACH BEWERTUNG
+# =========================
 
 def popular_dishes_statistics():
     if not file_exists_with_data(FEEDBACK_FILE):
@@ -458,70 +559,126 @@ def popular_dishes_statistics():
     text = "Most Popular Dishes by Rating:\n\n"
 
     for index, item in enumerate(ranking, start=1):
+        stars = rating_to_stars(item["average_rating"])
+
         text += (
             f"{index}. {item['dish']}\n"
-            f"Average Rating: {item['average_rating']} / 5\n"
+            f"Average Rating: {stars} {item['average_rating']} / 5\n"
             f"Number of Ratings: {item['rating_count']}\n"
             f"Latest Feedback: {item['latest_feedback']}\n\n"
         )
 
     best_dish = ranking[0]
+    best_stars = rating_to_stars(best_dish["average_rating"])
 
     text += (
         f"Best Rated Dish:\n"
-        f"{best_dish['dish']} with {best_dish['average_rating']} / 5"
+        f"{best_dish['dish']} with "
+        f"{best_stars} {best_dish['average_rating']} / 5"
     )
 
     show_output("Popular Dishes", text)
 
 
+# =========================
+# ALLES ZURÜCKSETZEN
+# =========================
+
+def reset_all_data():
+    global user_profile, selected_dish
+
+    confirm = messagebox.askyesno(
+        "Reset all data",
+        "Do you really want to delete all saved orders, feedback and the current user profile?"
+    )
+
+    if not confirm:
+        return
+
+    user_profile = {}
+    selected_dish = None
+
+    if os.path.isfile(ORDERS_FILE):
+        os.remove(ORDERS_FILE)
+
+    if os.path.isfile(FEEDBACK_FILE):
+        os.remove(FEEDBACK_FILE)
+
+    comment_box.delete("1.0", "end")
+
+    slider.set(3)
+    update_rating_label(3)
+
+    show_output(
+        "Reset completed",
+        "All data has been reset successfully.\n\n"
+        "Deleted:\n"
+        "- Orders\n"
+        "- Feedback\n"
+        "- Current user profile\n\n"
+        "You can now start again from zero."
+    )
+
+
+# =========================
 # HAUPTFENSTER
+# =========================
 
 root = ctk.CTk()
-root.configure(fg_color="#F3F5F0")
+root.configure(fg_color=APP_BG)
 root.geometry("1000x700")
 root.title("NutriWork")
 
 
+# =========================
 # TITEL
+# =========================
 
 title_label = ctk.CTkLabel(
     root,
     text="NutriWork Dashboard",
     font=("Arial", 30, "bold"),
-    text_color="#2B2B2B"
+    text_color=TEXT_COLOR
 )
 title_label.pack(pady=(20, 10))
 
 
+# =========================
 # PROFIL-BUTTON
+# =========================
 
-profile_button = ctk.CTkButton(
+profile_button = create_button(
     root,
-    text="Create User Profile",
-    command=open_profile_window,
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black"
+    "Create User Profile",
+    open_profile_window
 )
 profile_button.pack(pady=(0, 10))
 
 
+# =========================
 # MAIN FRAME
+# =========================
 
-main_frame = ctk.CTkFrame(root, fg_color="#F3F5F0")
+main_frame = ctk.CTkFrame(root, fg_color=APP_BG)
 main_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
 
+# =========================
 # LINKE SEITE
+# =========================
 
-left_frame = ctk.CTkFrame(main_frame, fg_color="white", corner_radius=15)
+left_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color=CARD_BG,
+    corner_radius=15
+)
 left_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
 dish_title = ctk.CTkLabel(
     left_frame,
     text="Choose the day",
-    font=("Arial", 22, "bold")
+    font=("Arial", 22, "bold"),
+    text_color=TEXT_COLOR
 )
 dish_title.pack(pady=10)
 
@@ -533,67 +690,88 @@ weekday = ctk.CTkOptionMenu(
 weekday.pack(pady=(0, 20))
 
 
+# =========================
 # ANALYSE-BUTTONS
+# =========================
 
-daily_analytics_button = ctk.CTkButton(
+daily_analytics_button = create_button(
     left_frame,
-    text="Daily analytics",
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black",
-    command=daily_analytics
+    "Daily analytics",
+    daily_analytics
 )
 daily_analytics_button.pack(pady=(0, 15))
 
-weekly_analytics_button = ctk.CTkButton(
+weekly_analytics_button = create_button(
     left_frame,
-    text="Weekly analytics",
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black",
-    command=weekly_analytics
+    "Weekly analytics",
+    weekly_analytics
 )
 weekly_analytics_button.pack(pady=(0, 15))
 
-popular_dishes_button = ctk.CTkButton(
+popular_dishes_button = create_button(
     left_frame,
-    text="Popular dishes",
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black",
-    command=popular_dishes_statistics
+    "Popular dishes",
+    popular_dishes_statistics
 )
-popular_dishes_button.pack(pady=(0, 20))
+popular_dishes_button.pack(pady=(0, 15))
 
 
+# =========================
+# RESET-BUTTON
+# =========================
+
+reset_button = ctk.CTkButton(
+    left_frame,
+    text="Reset all data",
+    command=reset_all_data,
+    fg_color=RESET_COLOR,
+    hover_color=RESET_HOVER,
+    text_color="black"
+)
+reset_button.pack(pady=(0, 20))
+
+
+# =========================
 # GERICHTE
+# =========================
 
 dishes_label = ctk.CTkLabel(
     left_frame,
     text="Today's Dishes",
-    font=("Arial", 22, "bold")
+    font=("Arial", 22, "bold"),
+    text_color=TEXT_COLOR
 )
 dishes_label.pack(pady=(10, 5))
 
-dishes_frame = ctk.CTkFrame(left_frame, fg_color="white")
+dishes_frame = ctk.CTkFrame(
+    left_frame,
+    fg_color=CARD_BG
+)
 dishes_frame.pack(fill="x")
 
 
+# =========================
 # RECHTE SEITE
+# =========================
 
-right_frame = ctk.CTkFrame(main_frame, fg_color="white", corner_radius=15)
+right_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color=CARD_BG,
+    corner_radius=15
+)
 right_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
 details_title = ctk.CTkLabel(
     right_frame,
     text="Dish Details",
-    font=("Arial", 22, "bold")
+    font=("Arial", 22, "bold"),
+    text_color=TEXT_COLOR
 )
 details_title.pack(pady=10)
 
 details_textbox = ctk.CTkTextbox(
     right_frame,
-    width=420,
+    width=430,
     height=280,
     font=("Arial", 16)
 )
@@ -602,56 +780,66 @@ details_textbox.insert("1.0", "Select a dish")
 details_textbox.configure(state="disabled")
 
 
+# =========================
 # BESTELLBUTTON
+# =========================
 
-order_button = ctk.CTkButton(
+order_button = create_button(
     right_frame,
-    text="Order",
-    command=order_dish,
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black"
+    "Order",
+    order_dish
 )
 order_button.pack(padx=30, pady=10)
 
 
+# =========================
 # FEEDBACK-BEREICH
+# =========================
 
 feedback_label = ctk.CTkLabel(
     right_frame,
     text="Rate this dish from 1 to 5:",
-    font=("Arial", 18)
+    font=("Arial", 18),
+    text_color=TEXT_COLOR
 )
-feedback_label.pack(pady=10)
+feedback_label.pack(pady=(10, 5))
+
+rating_value_label = ctk.CTkLabel(
+    right_frame,
+    text="★★★☆☆ 3 / 5",
+    font=("Arial", 16),
+    text_color=TEXT_COLOR
+)
+rating_value_label.pack(pady=(0, 5))
 
 slider = ctk.CTkSlider(
     right_frame,
     from_=1,
     to=5,
-    number_of_steps=4
+    number_of_steps=4,
+    command=update_rating_label
 )
 slider.set(3)
 slider.pack(pady=10)
 
 comment_box = ctk.CTkTextbox(
     right_frame,
-    width=300,
+    width=310,
     height=100
 )
 comment_box.pack(pady=10)
 
-submit_button = ctk.CTkButton(
+submit_button = create_button(
     right_frame,
-    text="Submit Feedback",
-    command=save_feedback,
-    fg_color="#A8C3A0",
-    hover_color="#8FAE87",
-    text_color="black"
+    "Submit Feedback",
+    save_feedback
 )
 submit_button.pack(padx=5, pady=5)
 
 
+# =========================
 # START
+# =========================
 
 new_dishes()
 root.mainloop()
