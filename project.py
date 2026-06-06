@@ -247,6 +247,50 @@ def weekly_analytics():
 
     details_title.configure(text="Weekly Analytics")
     details_label.configure(text=text_l)
+
+# BELIEBTESTE GERICHTE STATISTIK
+
+def popular_dishes_statistics():
+    orders_count = {}
+
+    if not os.path.isfile("orders.csv"):
+        details_title.configure(text="Popular Dishes")
+        details_label.configure(text="No orders saved yet.")
+        return
+
+    with open("orders.csv", "r", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            dish = row["Dish"]
+            orders_count[dish] = orders_count.get(dish, 0) + 1
+
+    if not orders_count:
+        details_title.configure(text="Popular Dishes")
+        details_label.configure(text="No orders saved yet.")
+        return
+
+    sorted_dishes = sorted(
+        orders_count.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+
+    text_l = "Most Popular Dishes:\n\n"
+
+    for place, (dish, count) in enumerate(sorted_dishes, start=1):
+        text_l += f"{place}. {dish}: {count} orders\n"
+
+    most_popular_dish = sorted_dishes[0][0]
+    most_popular_count = sorted_dishes[0][1]
+
+    text_l += (
+        f"\n🏆 Most popular dish:\n"
+        f"{most_popular_dish} with {most_popular_count} orders"
+    )
+
+    details_title.configure(text="Popular Dishes")
+    details_label.configure(text=text_l)
     
 # WOCHENTAGS-AUSWAHL
 
