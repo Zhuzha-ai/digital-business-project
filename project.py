@@ -5,17 +5,12 @@ from datetime import datetime
 from tkinter import messagebox
 
 
-# =========================
 # SETTINGS
-# =========================
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
 
-
-# =========================
 # DESIGN-KONSTANTEN
-# =========================
 
 APP_BG = "#F3F5F0"
 CARD_BG = "white"
@@ -26,26 +21,21 @@ RESET_HOVER = "#C76F6F"
 TEXT_COLOR = "#2B2B2B"
 
 
-# =========================
 # DATEIEN
-# =========================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ORDERS_FILE = os.path.join(BASE_DIR, "orders.csv")
 FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback.csv")
 
 
-# =========================
 # GLOBALE VARIABLEN
-# =========================
 
 user_profile = {}
 selected_dish = None
 
 
-# =========================
 # GERICHTE DES WOCHENPLANS
-# =========================
+
 
 schedule = {
     "Monday": [
@@ -128,9 +118,7 @@ schedule = {
 }
 
 
-# =========================
 # HILFSFUNKTIONEN
-# =========================
 
 def show_output(title, text):
     details_title.configure(text=title)
@@ -173,9 +161,8 @@ def create_button(parent, text, command):
     )
 
 
-# =========================
 # USER PROFILE
-# =========================
+
 
 def open_profile_window():
     new_window = ctk.CTkToplevel(root)
@@ -260,10 +247,8 @@ def open_profile_window():
     )
     save_button.pack(pady=25)
 
-
-# =========================
 # GERICHTE
-# =========================
+
 
 def new_dishes(day=None):
     for widget in dishes_frame.winfo_children():
@@ -303,11 +288,13 @@ def show_dish(dish):
             weight = float(user_profile["weight"])
             protein_goal = weight * 2
             protein_percent = round(dish["protein"] / protein_goal * 100)
-
-            text += (
-                f"\n\nProtein Coverage: {protein_percent}%"
-                f"\nRecommended for muscle gain."
-            )
+            if protein_percent >= 25:
+                text +=(
+                    f"\n\nProtein Coverage: {protein_percent}%"
+                    f"\nRecommended for muscle gain."
+                    )
+            else:
+                text += (f"\n\nProtein Coverage: {protein_percent}%")
 
         except ValueError:
             text += "\n\nPlease enter a valid weight in your profile."
@@ -315,9 +302,8 @@ def show_dish(dish):
     show_output("Dish Details", text)
 
 
-# =========================
 # BESTELLUNG SPEICHERN
-# =========================
+
 
 def order_dish():
     if selected_dish is None:
@@ -346,9 +332,7 @@ def order_dish():
     )
 
 
-# =========================
 # FEEDBACK SPEICHERN
-# =========================
 
 def save_feedback():
     if selected_dish is None:
@@ -389,9 +373,7 @@ def save_feedback():
     )
 
 
-# =========================
 # RATING-LABEL AKTUALISIEREN
-# =========================
 
 def update_rating_label(value):
     rating = int(round(value))
@@ -399,9 +381,8 @@ def update_rating_label(value):
     rating_value_label.configure(text=f"{stars} {rating} / 5")
 
 
-# =========================
 # TAGESANALYSE
-# =========================
+
 
 def daily_analytics():
     if not file_exists_with_data(ORDERS_FILE):
@@ -436,9 +417,8 @@ def daily_analytics():
     show_output(f"Daily Analytics: {selected_day}", text)
 
 
-# =========================
 # WOCHENANALYSE
-# =========================
+
 
 def weekly_analytics():
     orders_count = {}
@@ -499,9 +479,7 @@ def weekly_analytics():
     show_output("Weekly Analytics", text)
 
 
-# =========================
 # BELIEBTESTE GERICHTE NACH BEWERTUNG
-# =========================
 
 def popular_dishes_statistics():
     if not file_exists_with_data(FEEDBACK_FILE):
@@ -580,49 +558,8 @@ def popular_dishes_statistics():
     show_output("Popular Dishes", text)
 
 
-# =========================
-# ANALYSEFENSTER
-# =========================
-
-def open_analysis_window():
-    analysis_window = ctk.CTkToplevel(root)
-    analysis_window.title("Analysis")
-    analysis_window.geometry("350x300")
-    analysis_window.grab_set()
-
-    title = ctk.CTkLabel(
-        analysis_window,
-        text="Choose an analysis",
-        font=("Arial", 22, "bold"),
-        text_color=TEXT_COLOR
-    )
-    title.pack(pady=(25, 20))
-
-    daily_button = create_button(
-        analysis_window,
-        "Daily analytics",
-        lambda: [daily_analytics(), analysis_window.destroy()]
-    )
-    daily_button.pack(pady=10)
-
-    weekly_button = create_button(
-        analysis_window,
-        "Weekly analytics",
-        lambda: [weekly_analytics(), analysis_window.destroy()]
-    )
-    weekly_button.pack(pady=10)
-
-    popular_button = create_button(
-        analysis_window,
-        "Popular dishes",
-        lambda: [popular_dishes_statistics(), analysis_window.destroy()]
-    )
-    popular_button.pack(pady=10)
-
-
-# =========================
 # ALLES ZURÜCKSETZEN
-# =========================
+
 
 def reset_all_data():
     global user_profile, selected_dish
@@ -660,9 +597,8 @@ def reset_all_data():
     )
 
 
-# =========================
 # HAUPTFENSTER
-# =========================
+
 
 root = ctk.CTk()
 root.configure(fg_color=APP_BG)
@@ -670,9 +606,7 @@ root.geometry("1000x700")
 root.title("NutriWork")
 
 
-# =========================
 # OBERER BEREICH
-# =========================
 
 top_frame = ctk.CTkFrame(
     root,
@@ -700,19 +634,48 @@ top_buttons_frame = ctk.CTkFrame(
 )
 top_buttons_frame.pack(anchor="center")
 
-profile_button = create_button(
+profile_button = ctk.CTkButton(
     top_buttons_frame,
-    "Create User Profile",
-    open_profile_window
+    text="Create User Profile",
+    command=open_profile_window,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
 )
 profile_button.pack(side="left", padx=8)
 
-analysis_button = create_button(
+daily_button = ctk.CTkButton(
     top_buttons_frame,
-    "Analysis",
-    open_analysis_window
+    text="Daily analytics",
+    command=daily_analytics,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
 )
-analysis_button.pack(side="left", padx=8)
+daily_button.pack(side="left",padx=8)
+
+weekly_button = ctk.CTkButton(
+    top_buttons_frame,
+    text="Weekly analytics",
+    command=weekly_analytics,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
+)
+weekly_button.pack(side="left",padx=8)
+
+popular_button = ctk.CTkButton(
+    top_buttons_frame,
+    text="Popular dishes",
+    command=popular_dishes_statistics,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
+)
+popular_button.pack(side="left",padx=8)
+
+
+
 
 reset_button = ctk.CTkButton(
     top_buttons_frame,
@@ -725,17 +688,13 @@ reset_button = ctk.CTkButton(
 reset_button.pack(side="left", padx=8)
 
 
-# =========================
 # MAIN FRAME
-# =========================
 
 main_frame = ctk.CTkFrame(root, fg_color=APP_BG)
 main_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
 
-# =========================
 # LINKE SEITE
-# =========================
 
 left_frame = ctk.CTkFrame(
     main_frame,
@@ -760,9 +719,7 @@ weekday = ctk.CTkOptionMenu(
 weekday.pack(pady=(0, 20))
 
 
-# =========================
 # GERICHTE
-# =========================
 
 dishes_label = ctk.CTkLabel(
     left_frame,
@@ -779,9 +736,7 @@ dishes_frame = ctk.CTkFrame(
 dishes_frame.pack(fill="x")
 
 
-# =========================
 # RECHTE SEITE
-# =========================
 
 right_frame = ctk.CTkFrame(
     main_frame,
@@ -809,21 +764,19 @@ details_textbox.insert("1.0", "Select a dish")
 details_textbox.configure(state="disabled")
 
 
-# =========================
 # BESTELLBUTTON
-# =========================
 
-order_button = create_button(
+order_button = ctk.CTkButton(
     right_frame,
-    "Order",
-    order_dish
+    text="Order",
+    command=order_dish,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
 )
 order_button.pack(padx=30, pady=10)
 
-
-# =========================
 # FEEDBACK-BEREICH
-# =========================
 
 feedback_label = ctk.CTkLabel(
     right_frame,
@@ -858,17 +811,17 @@ comment_box = ctk.CTkTextbox(
 )
 comment_box.pack(pady=10)
 
-submit_button = create_button(
+submit_button = ctk.CTkButton(
     right_frame,
-    "Submit Feedback",
-    save_feedback
+    text="Submit Feedback",
+    command=save_feedback,
+    fg_color=BUTTON_COLOR,
+    hover_color=BUTTON_HOVER,
+    text_color="black"
 )
 submit_button.pack(padx=5, pady=5)
 
-
-# =========================
 # START
-# =========================
 
 new_dishes()
 root.mainloop()
